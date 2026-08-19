@@ -4,7 +4,9 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     // API URL configuration
-    let API_BASE_URL = 'https://r4hul-78-lemma-backend.hf.space'; -icon
+    let API_BASE_URL = (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'))
+        ? window.location.origin
+        : 'https://r4hul-78-lemma-backend.hf.space';
     let API_UPLOAD_URL = `${API_BASE_URL}/api/v1/documents/upload`;
     let API_ANALYZE_URL = `${API_BASE_URL}/api/v1/analyze`;
     let API_STATUS_URL = `${API_BASE_URL}/api/v1/status`;
@@ -60,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let activeFile = null;
     let uploadResponseData = null;
     let currentJobId = null;
+    let isUploading = false;
     let isAnalyzing = false;
     let isParaphrasing = false;
 
@@ -150,9 +153,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!hOllama || !hEs || !hDb || !hCelery) return;
 
-        // Force working status during job performance to keep UI clean and accurate
-        if (isAnalyzing || isParaphrasing) {
-            if (isAnalyzing) {
+        // Display working status during upload, analysis, or paraphrase
+        if (isUploading || isAnalyzing || isParaphrasing) {
+            if (isUploading || isAnalyzing) {
                 hDb.className = "health-item working-orange";
                 hDbText.textContent = "Working";
                 hEs.className = "health-item working-orange";
@@ -168,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         try {
-            const response = await fetch(API_HEALTH_URL, { signal: AbortSignal.timeout(5000) });
+            const response = await fetch(API_HEALTH_URL, { signal: AbortSignal.timeout(6000) });
             if (response.ok) {
                 const healthData = await response.json();
                 const services = healthData.services || {};
@@ -222,15 +225,16 @@ document.addEventListener("DOMContentLoaded", () => {
                     hCelery.className = "health-item offline-red";
                     hCeleryText.textContent = "Offline";
                 }
-            } else {
-                throw new Error("Health response not OK");
             }
         } catch (error) {
-            console.error("Health footer check failed:", error);
-            hOllama.className = "health-item offline-red"; hOllamaText.textContent = "Offline";
-            hEs.className = "health-item offline-red"; hEsText.textContent = "Offline";
-            hDb.className = "health-item offline-red"; hDbText.textContent = "Offline";
-            hCelery.className = "health-item offline-red"; hCeleryText.textContent = "Offline";
+            console.warn("Health footer check delayed:", error);
+            // If actively processing a document, maintain Working indicators rather than flipping to Offline
+            if (isUploading || isAnalyzing || isParaphrasing) {
+                hDb.className = "health-item working-orange"; hDbText.textContent = "Working";
+                hEs.className = "health-item working-orange"; hEsText.textContent = "Working";
+                hCelery.className = "health-item working-orange"; hCeleryText.textContent = "Working";
+                hOllama.className = "health-item online-green"; hOllamaText.textContent = "Online";
+            }
         }
     }
 
@@ -339,6 +343,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Show loading progress
         showToast(`Uploading ${file.name}...`, "info");
+        isUploading = true;
+        checkServerHealth();
 
         const formData = new FormData();
         formData.append("file", file);
@@ -377,6 +383,9 @@ document.addEventListener("DOMContentLoaded", () => {
             metaFilename.textContent = "No file uploaded";
             metaStatus.innerHTML = '<span class="badge badge-dim">Idle</span>';
             btnRunAnalysis.disabled = true;
+        } finally {
+            isUploading = false;
+            checkServerHealth();
         }
     }
 
@@ -951,6 +960,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const navItems = document.querySelectorAll(".nav-item");
     const dashboardWorkspace = document.getElementById("dashboard-workspace");
     const paraphraserWorkspace = document.getElementById("paraphraser-workspace");
+    const kbWorkspace = document.getElementById("kb-workspace");
+    const citationsWorkspace = document.getElementById("citations-workspace");
 
     function hideAllWorkspaces() {
         const views = [
@@ -958,6 +969,8 @@ document.addEventListener("DOMContentLoaded", () => {
             dashboardWorkspace,
             paraphraserWorkspace,
             reportsWorkspace,
+            kbWorkspace,
+            citationsWorkspace,
             placeholderWorkspace
         ];
         views.forEach(v => {
@@ -990,9 +1003,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (paraphraserWorkspace) paraphraserWorkspace.classList.remove("hidden");
             } else if (tabId === "nav-plagiarism") {
                 if (dashboardWorkspace) dashboardWorkspace.classList.remove("hidden");
+            } else if (tabId === "nav-kb") {
+                if (kbWorkspace) kbWorkspace.classList.remove("hidden");
+            } else if (tabId === "nav-citations") {
+                if (citationsWorkspace) citationsWorkspace.classList.remove("hidden");
+                updateCitationOutput();
             } else if (tabId === "nav-export") {
                 if (reportsWorkspace) reportsWorkspace.classList.remove("hidden");
                 renderReportsHistory();
+            } else if (tabId === "nav-support") {
+                window.open(`${API_BASE_URL}/docs`, "_blank");
+                if (dashboardHomeView) dashboardHomeView.classList.remove("hidden");
             } else {
                 // Non-functional pages -> show placeholder
                 if (placeholderWorkspace) {
@@ -1016,21 +1037,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         iconClass = "fa-book-open";
                         desc = "Compare research methodologies, identify research gaps, list limitations, and compile theme summaries.";
                         sprint = "Sprint 3";
-                    } else if (tabId === "nav-citations") {
-                        title = "Citation Generator";
-                        iconClass = "fa-quote-right";
-                        desc = "Generate academic citations in APA, IEEE, MLA, Chicago, Harvard, BibTeX, and RIS formats.";
-                        sprint = "Sprint 3";
                     } else if (tabId === "nav-notes") {
                         title = "Academic Note Editor";
                         iconClass = "fa-note-sticky";
                         desc = "Create rich text study notes integrated with LaTeX math support, tables, images, and Markdown.";
                         sprint = "Sprint 2";
-                    } else if (tabId === "nav-kb") {
-                        title = "Personal Knowledge Base";
-                        iconClass = "fa-database";
-                        desc = "Organize references, summaries, and notes into collections, folders, and custom tags.";
-                        sprint = "Sprint 4";
                     } else if (tabId === "nav-pdfsummary") {
                         title = "PDF AI Summarizer";
                         iconClass = "fa-file-contract";
@@ -1041,11 +1052,6 @@ document.addEventListener("DOMContentLoaded", () => {
                         iconClass = "fa-gear";
                         desc = "Configure on-device AI model selections, generation parameters (temperature, max tokens), storage paths, and UI theme options.";
                         sprint = "Sprint 1 / 5";
-                    } else if (tabId === "nav-support") {
-                        title = "Help & Support Center";
-                        iconClass = "fa-circle-question";
-                        desc = "Troubleshoot local engine setups (Ollama, PostgreSQL, Elasticsearch) and read keyboard shortcuts guides.";
-                        sprint = "Sprint 1";
                     }
 
                     if (pIcon) pIcon.className = `fa-solid ${iconClass}`;
@@ -1443,6 +1449,166 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // -------------------------------------------------------------
+    // Sample Research Paper Loader (One-Click Ingestion)
+    // -------------------------------------------------------------
+    const btnLoadSample = document.getElementById("btn-load-sample");
+    if (btnLoadSample) {
+        btnLoadSample.addEventListener("click", () => {
+            const sampleText = `Attention mechanisms have revolutionized natural language processing and computer vision. By allowing models to dynamically weight input tokens, transformers achieve state-of-the-art accuracy across text generation, machine translation, and semantic search tasks. Transitioning from fossil fuels to renewable energy sources is key to mitigating global climate change and achieving net-zero emissions targets. Deep learning models continue to demonstrate unprecedented capabilities across distributed information processing.`;
+            const sampleBlob = new Blob([sampleText], { type: "text/plain" });
+            const sampleFile = new File([sampleBlob], "transformer_renewable_sample.txt", { type: "text/plain" });
+            handleFileSelection(sampleFile);
+        });
+    }
+
+    // -------------------------------------------------------------
+    // Command Center Quick Launch Tiles Routing
+    // -------------------------------------------------------------
+    const tilePlagiarism = document.getElementById("tile-launch-plagiarism");
+    if (tilePlagiarism) {
+        tilePlagiarism.addEventListener("click", () => {
+            const navPlag = document.getElementById("nav-plagiarism");
+            if (navPlag) navPlag.click();
+        });
+    }
+
+    const tileParaphraser = document.getElementById("tile-launch-paraphraser");
+    if (tileParaphraser) {
+        tileParaphraser.addEventListener("click", () => {
+            const navPara = document.getElementById("nav-aichat");
+            if (navPara) navPara.click();
+        });
+    }
+
+    const tileKb = document.getElementById("tile-launch-kb");
+    if (tileKb) {
+        tileKb.addEventListener("click", () => {
+            const navKb = document.getElementById("nav-kb");
+            if (navKb) navKb.click();
+        });
+    }
+
+    // Header Profile "My Analysis History" dropdown item
+    const btnProfileReports = document.getElementById("profile-btn-view-reports");
+    if (btnProfileReports) {
+        btnProfileReports.addEventListener("click", () => {
+            LemmaAuth._closeProfileDropdown();
+            const navExport = document.getElementById("nav-export");
+            if (navExport) navExport.click();
+        });
+    }
+
+    // -------------------------------------------------------------
+    // Knowledge Base Search Filter & Citation Copy
+    // -------------------------------------------------------------
+    const kbSearchInput = document.getElementById("kb-search-input");
+    if (kbSearchInput) {
+        kbSearchInput.addEventListener("input", (e) => {
+            const query = e.target.value.toLowerCase().trim();
+            const cards = document.querySelectorAll(".kb-paper-card");
+            cards.forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    card.style.display = "flex";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        });
+    }
+
+    document.querySelectorAll(".btn-kb-copy").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const citeText = btn.dataset.text;
+            if (citeText) {
+                navigator.clipboard.writeText(citeText).then(() => {
+                    showToast("Copied citation to clipboard!", "success");
+                });
+            }
+        });
+    });
+
+    // -------------------------------------------------------------
+    // Citations & BibTeX Studio Logic
+    // -------------------------------------------------------------
+    let currentCiteStyle = "apa";
+
+    function updateCitationOutput() {
+        const title = document.getElementById("cite-title")?.value.trim() || "Paper Title";
+        const author = document.getElementById("cite-author")?.value.trim() || "Author Name";
+        const year = document.getElementById("cite-year")?.value.trim() || "2024";
+        const journal = document.getElementById("cite-journal")?.value.trim() || "Academic Journal";
+        const doi = document.getElementById("cite-doi")?.value.trim() || "doi:10.1000/182";
+        const outputBox = document.getElementById("citation-output-box");
+
+        if (!outputBox) return;
+
+        let formatted = "";
+        if (currentCiteStyle === "apa") {
+            formatted = `${author} (${year}). ${title}. ${journal}. https://doi.org/${doi}`;
+        } else if (currentCiteStyle === "ieee") {
+            formatted = `${author}, "${title}," ${journal}, ${year}, doi: ${doi}.`;
+        } else if (currentCiteStyle === "bibtex") {
+            const citeKey = (author.split(",")[0].trim().split(" ").pop() || "paper") + year;
+            formatted = `@article{${citeKey.toLowerCase()},\n  title={${title}},\n  author={${author}},\n  journal={${journal}},\n  year={${year}},\n  doi={${doi}}\n}`;
+        } else if (currentCiteStyle === "mla") {
+            formatted = `${author}. "${title}." ${journal}, ${year}, ${doi}.`;
+        } else if (currentCiteStyle === "chicago") {
+            formatted = `${author}. "${title}." ${journal} (${year}). https://doi.org/${doi}.`;
+        }
+
+        outputBox.textContent = formatted;
+    }
+
+    const citationInputs = ["cite-title", "cite-author", "cite-year", "cite-journal", "cite-doi"];
+    citationInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("input", updateCitationOutput);
+    });
+
+    document.querySelectorAll(".citation-tab-btn").forEach(tab => {
+        tab.addEventListener("click", () => {
+            document.querySelectorAll(".citation-tab-btn").forEach(t => t.classList.remove("active"));
+            tab.classList.add("active");
+            currentCiteStyle = tab.dataset.style || "apa";
+            updateCitationOutput();
+        });
+    });
+
+    const btnCopyCitation = document.getElementById("btn-copy-citation");
+    if (btnCopyCitation) {
+        btnCopyCitation.addEventListener("click", () => {
+            const outputBox = document.getElementById("citation-output-box");
+            if (outputBox && outputBox.textContent) {
+                navigator.clipboard.writeText(outputBox.textContent).then(() => {
+                    showToast("Copied formatted citation to clipboard!", "success");
+                });
+            }
+        });
+    }
+
+    // -------------------------------------------------------------
+    // Auth Synchronization Listener
+    // -------------------------------------------------------------
+    window.addEventListener("lemma:auth-changed", async (e) => {
+        if (e.detail.loggedIn) {
+            try {
+                const userJobs = await LemmaAuth.fetchHistory();
+                if (userJobs && userJobs.length > 0) {
+                    userJobs.forEach(job => {
+                        if (job.result) {
+                            saveReportToHistory(job.filename || "Document", job.id, job.score || 0, job.result);
+                        }
+                    });
+                    renderReportsHistory();
+                }
+            } catch (err) {
+                console.warn("Failed syncing user history:", err);
+            }
+        }
+    });
+
     // Blank Start Page Workspace Event Handlers
     const blankPromptInput = document.getElementById("blank-prompt-input");
     if (blankPromptInput) {
@@ -1457,7 +1623,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         paraInputText.dispatchEvent(new Event("input"));
                     }
 
-                    const navParaphrase = document.getElementById("nav-paraphrase");
+                    const navParaphrase = document.getElementById("nav-aichat");
                     if (navParaphrase) {
                         navParaphrase.click();
                     }
@@ -1471,11 +1637,23 @@ document.addEventListener("DOMContentLoaded", () => {
     const btnBlankNew = document.getElementById("btn-blank-new");
     if (btnBlankNew) {
         btnBlankNew.addEventListener("click", () => {
-            const navPlagiarism = document.getElementById("nav-plagiarism");
-            if (navPlagiarism) {
-                navPlagiarism.click();
+            const promptVal = blankPromptInput ? blankPromptInput.value.trim() : "";
+            if (promptVal) {
+                const paraInputText = document.getElementById("para-input-text");
+                if (paraInputText) {
+                    paraInputText.value = promptVal;
+                    paraInputText.dispatchEvent(new Event("input"));
+                }
+                const navParaphrase = document.getElementById("nav-aichat");
+                if (navParaphrase) navParaphrase.click();
+            } else {
+                const navPlagiarism = document.getElementById("nav-plagiarism");
+                if (navPlagiarism) navPlagiarism.click();
             }
         });
     }
+
+    // Expose showToast globally for auth and other modules
+    window.showToast = showToast;
 });
 

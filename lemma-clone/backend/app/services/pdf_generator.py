@@ -1,7 +1,6 @@
 import io
 import html
 import datetime
-from weasyprint import HTML
 
 class PDFGeneratorService:
     """
@@ -625,6 +624,7 @@ class PDFGeneratorService:
 </html>
 """
         # Compile HTML string to PDF bytes via WeasyPrint
+        from weasyprint import HTML
         pdf_bytes = io.BytesIO()
         HTML(string=html_content).write_pdf(target=pdf_bytes)
         return pdf_bytes.getvalue()

@@ -122,57 +122,49 @@ class OnlineRetrieverService:
             "max_results": limit
         }
         
-        max_retries = 3
-        backoff = 1.5
-        for attempt in range(max_retries):
-            try:
-                async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
-                    response = await client.get(url, params=params)
-                    if response.status_code == 200:
-                        ns = {'atom': 'http://www.w3.org/2005/Atom'}
-                        root = ET.fromstring(response.content)
-                        entries = root.findall('atom:entry', ns)
+        try:
+            async with httpx.AsyncClient(timeout=3.0, follow_redirects=True) as client:
+                response = await client.get(url, params=params)
+                if response.status_code == 200:
+                    ns = {'atom': 'http://www.w3.org/2005/Atom'}
+                    root = ET.fromstring(response.content)
+                    entries = root.findall('atom:entry', ns)
+                    
+                    candidates = []
+                    for entry in entries:
+                        title_elem = entry.find('atom:title', ns)
+                        summary_elem = entry.find('atom:summary', ns)
+                        id_elem = entry.find('atom:id', ns)
                         
-                        candidates = []
-                        for entry in entries:
-                            title_elem = entry.find('atom:title', ns)
-                            summary_elem = entry.find('atom:summary', ns)
-                            id_elem = entry.find('atom:id', ns)
+                        if title_elem is None or summary_elem is None or id_elem is None:
+                            continue
                             
-                            if title_elem is None or summary_elem is None or id_elem is None:
-                                continue
-                                
-                            title = title_elem.text.strip().replace("\n", " ")
-                            abstract = summary_elem.text.strip().replace("\n", " ")
-                            paper_url = id_elem.text.strip()
-                            paper_id = paper_url.split('/abs/')[-1].split('v')[0]
-                            
-                            authors = [
-                                auth.find('atom:name', ns).text.strip() 
-                                for auth in entry.findall('atom:author', ns) 
-                                if auth.find('atom:name', ns) is not None
-                            ]
-                            author_str = ", ".join(authors) if authors else "N/A"
-                            
-                            candidates.append({
-                                "doc_id": f"arxiv_{paper_id}",
-                                "title": title,
-                                "author": author_str,
-                                "source": f"arXiv Preprint ({paper_url})",
-                                "text": abstract
-                            })
-                        return candidates
-                    elif response.status_code == 429:
-                        wait_time = backoff * (2 ** attempt)
-                        logger.warning(f"arXiv API returned 429. Retrying in {wait_time}s... (Attempt {attempt+1}/{max_retries})")
-                        await asyncio.sleep(wait_time)
-                    else:
-                        logger.warning(f"arXiv API returned status code {response.status_code}")
-                        return []
-            except Exception as e:
-                logger.error(f"Failed to fetch candidates from arXiv for query '{query}': {e}")
-                return []
-        return []
+                        title = title_elem.text.strip().replace("\n", " ")
+                        abstract = summary_elem.text.strip().replace("\n", " ")
+                        paper_url = id_elem.text.strip()
+                        paper_id = paper_url.split('/abs/')[-1].split('v')[0]
+                        
+                        authors = [
+                            auth.find('atom:name', ns).text.strip() 
+                            for auth in entry.findall('atom:author', ns) 
+                            if auth.find('atom:name', ns) is not None
+                        ]
+                        author_str = ", ".join(authors) if authors else "N/A"
+                        
+                        candidates.append({
+                            "doc_id": f"arxiv_{paper_id}",
+                            "title": title,
+                            "author": author_str,
+                            "source": f"arXiv Preprint ({paper_url})",
+                            "text": abstract
+                        })
+                    return candidates
+                else:
+                    logger.warning(f"arXiv API returned status code {response.status_code}")
+                    return []
+        except Exception as e:
+            logger.warning(f"Failed to fetch candidates from arXiv for query '{query}': {e}")
+            return []
 
     @classmethod
     async def fetch_semantic_scholar_candidates(cls, query: str, limit: int = 15) -> list[dict]:
@@ -190,52 +182,42 @@ class OnlineRetrieverService:
             headers["x-api-key"] = settings.SEMANTIC_SCHOLAR_API_KEY
             has_key = True
             
-        max_retries = 3 if has_key else 1
-        backoff = 1.5
-        for attempt in range(max_retries):
-            try:
-                async with httpx.AsyncClient(timeout=10.0, follow_redirects=True) as client:
-                    response = await client.get(url, params=params, headers=headers)
-                    if response.status_code == 200:
-                        data = response.json()
-                        papers = data.get("data", [])
+        try:
+            async with httpx.AsyncClient(timeout=3.0, follow_redirects=True) as client:
+                response = await client.get(url, params=params, headers=headers)
+                if response.status_code == 200:
+                    data = response.json()
+                    papers = data.get("data", [])
+                    
+                    candidates = []
+                    for paper in papers:
+                        paper_id = paper.get("paperId")
+                        title = paper.get("title")
+                        abstract = paper.get("abstract")
                         
-                        candidates = []
-                        for paper in papers:
-                            paper_id = paper.get("paperId")
-                            title = paper.get("title")
-                            abstract = paper.get("abstract")
+                        if not paper_id or not title or not abstract:
+                            continue
                             
-                            if not paper_id or not title or not abstract:
-                                continue
-                                
-                            authors = [auth.get("name") for auth in paper.get("authors", []) if auth.get("name")]
-                            author_str = ", ".join(authors) if authors else "N/A"
-                            
-                            venue = paper.get("venue", "Unknown Venue")
-                            year = paper.get("year", "N/A")
-                            
-                            candidates.append({
-                                "doc_id": f"semschol_{paper_id}",
-                                "title": title,
-                                "author": author_str,
-                                "source": f"{venue}, {year}",
-                                "text": abstract
-                            })
-                        return candidates
-                    elif response.status_code == 429:
-                        if not has_key:
-                            logger.warning("Semantic Scholar API returned 429 (unauthenticated). Skipping retries to avoid timeout.")
-                            return []
-                        wait_time = backoff * (2 ** attempt)
-                        logger.warning(f"Semantic Scholar API returned 429. Retrying in {wait_time}s... (Attempt {attempt+1}/{max_retries})")
-                        await asyncio.sleep(wait_time)
-                    else:
-                        logger.warning(f"Semantic Scholar API returned status code {response.status_code}: {response.text}")
-                        return []
-            except Exception as e:
-                logger.error(f"Failed to fetch candidates from Semantic Scholar for query '{query}': {e}")
-                return []
+                        authors = [auth.get("name") for auth in paper.get("authors", []) if auth.get("name")]
+                        author_str = ", ".join(authors) if authors else "N/A"
+                        
+                        venue = paper.get("venue", "Unknown Venue")
+                        year = paper.get("year", "N/A")
+                        
+                        candidates.append({
+                            "doc_id": f"semschol_{paper_id}",
+                            "title": title,
+                            "author": author_str,
+                            "source": f"{venue}, {year}",
+                            "text": abstract
+                        })
+                    return candidates
+                else:
+                    logger.warning(f"Semantic Scholar API returned status code {response.status_code}")
+                    return []
+        except Exception as e:
+            logger.warning(f"Failed to fetch candidates from Semantic Scholar for query '{query}': {e}")
+            return []
         return []
 
     @classmethod

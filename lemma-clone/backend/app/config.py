@@ -54,19 +54,19 @@ class Settings(BaseSettings):
     
     # Database Settings
     DATABASE_URL: str | None = None
-    POSTGRES_HOST: str = "localhost"
+    POSTGRES_HOST: str = "127.0.0.1"
     POSTGRES_PORT: int = 5432
     POSTGRES_DB: str = "lemma"
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
     
     # Elasticsearch Settings
-    ELASTICSEARCH_URL: str = "http://localhost:9200"
+    ELASTICSEARCH_URL: str = "http://127.0.0.1:9200"
     
-    # Online Retrieval Settings
-    ENABLE_ONLINE_RETRIEVAL: bool = True
+    # Online Retrieval Settings (Disabled by default for local-first sub-second analysis)
+    ENABLE_ONLINE_RETRIEVAL: bool = False
     SEMANTIC_SCHOLAR_API_KEY: str | None = None
-    MAX_ONLINE_CANDIDATES_PER_QUERY: int = 30
+    MAX_ONLINE_CANDIDATES_PER_QUERY: int = 5
     
     # Deprecated/Fallback Settings
     SQLITE_DB_FILE: str = "lemma.db"
@@ -74,7 +74,7 @@ class Settings(BaseSettings):
     FAISS_INDEX_PATH: Path = BASE_DIR / "data" / "lemma_vectors.index"
     
     # Redis & Celery
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = "redis://127.0.0.1:6379/0"
     CELERY_ALWAYS_EAGER: bool = True
     
     # Ollama settings

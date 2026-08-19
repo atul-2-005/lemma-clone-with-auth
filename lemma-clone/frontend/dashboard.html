@@ -39,6 +39,60 @@
     <div class="fog-overlay fog-1"></div>
     <div class="fog-overlay fog-2"></div>
 
+    <!-- Glassmorphic Global Authentication Modal -->
+    <div class="auth-modal-overlay" id="auth-modal-overlay">
+        <div class="auth-modal-card">
+            <button class="auth-close-btn" id="auth-close-btn" aria-label="Close dialog">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="auth-brand-row">
+                <div class="brand-badge">L</div>
+                <div>
+                    <h2 id="auth-modal-title">Welcome Back</h2>
+                    <p id="auth-modal-subtitle">Access your academic analyses & history</p>
+                </div>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" id="auth-tab-login">Sign In</button>
+                <button class="auth-tab-btn" id="auth-tab-register">Create Account</button>
+            </div>
+
+            <form id="auth-form" onsubmit="return false;">
+                <div class="auth-form-group" id="auth-name-group" style="display: none;">
+                    <label for="auth-input-name">Full Name</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-regular fa-user"></i>
+                        <input type="text" id="auth-input-name" class="auth-input" placeholder="e.g. Dr. Jane Doe" autocomplete="name">
+                    </div>
+                </div>
+
+                <div class="auth-form-group">
+                    <label for="auth-input-email">Email Address</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-regular fa-envelope"></i>
+                        <input type="email" id="auth-input-email" class="auth-input" placeholder="researcher@university.edu" autocomplete="email" required>
+                    </div>
+                </div>
+
+                <div class="auth-form-group">
+                    <label for="auth-input-password">Password</label>
+                    <div class="auth-input-wrapper">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="password" id="auth-input-password" class="auth-input" placeholder="••••••••" autocomplete="current-password" required>
+                    </div>
+                </div>
+
+                <div class="auth-error-msg" id="auth-modal-error"></div>
+
+                <button type="submit" class="auth-submit-btn" id="auth-submit-btn">
+                    <span id="auth-submit-text">Sign In to Lemma</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
     <div class="app-container collapsed" id="app-container-el">
         <script>
             (function () {
@@ -78,46 +132,6 @@
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li class="nav-item" id="nav-aichat">
-                        <a href="#">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                            <span>AI Chat</span>
-                        </a>
-                    </li>
-                    <li class="nav-item" id="nav-projects">
-                        <a href="#">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z">
-                                </path>
-                            </svg>
-                            <span>My Projects</span>
-                        </a>
-                    </li>
-                    <li class="nav-item" id="nav-litreview">
-                        <a href="#">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                            </svg>
-                            <span>Literature Review</span>
-                        </a>
-                    </li>
-                    <li class="nav-item" id="nav-citations">
-                        <a href="#">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5a4 4 0 0 1 4-4"></path>
-                                <path d="M16 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-5a4 4 0 0 1 4-4">
-                                </path>
-                            </svg>
-                            <span>Citations</span>
-                        </a>
-                    </li>
                     <li class="nav-item" id="nav-plagiarism">
                         <a href="#">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
@@ -127,17 +141,13 @@
                             <span>Plagiarism Check</span>
                         </a>
                     </li>
-                    <li class="nav-item" id="nav-notes">
+                    <li class="nav-item" id="nav-aichat">
                         <a href="#">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                                <polyline points="10 9 9 9 8 9"></polyline>
+                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                             </svg>
-                            <span>Notes</span>
+                            <span>AI Paraphraser</span>
                         </a>
                     </li>
                     <li class="nav-item" id="nav-kb">
@@ -151,20 +161,15 @@
                             <span>Knowledge Base</span>
                         </a>
                     </li>
-                </ul>
-
-                <div class="nav-section-title">Tools</div>
-                <ul>
-                    <li class="nav-item" id="nav-pdfsummary">
+                    <li class="nav-item" id="nav-citations">
                         <a href="#">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-5a4 4 0 0 1 4-4"></path>
+                                <path d="M16 11h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-5a4 4 0 0 1 4-4">
+                                </path>
                             </svg>
-                            <span>PDF to Summary</span>
+                            <span>Citations</span>
                         </a>
                     </li>
                     <li class="nav-item" id="nav-export">
@@ -175,7 +180,7 @@
                                 <polyline points="16 6 12 2 8 6"></polyline>
                                 <line x1="12" y1="2" x2="12" y2="15"></line>
                             </svg>
-                            <span>Export</span>
+                            <span>Reports & History</span>
                         </a>
                     </li>
                 </ul>
@@ -202,14 +207,14 @@
                                 <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
                                 <line x1="12" y1="17" x2="12.01" y2="17"></line>
                             </svg>
-                            <span>Help & Support</span>
+                            <span>API Documentation</span>
                         </a>
                     </li>
                 </ul>
             </nav>
 
             <div class="sidebar-footer">
-                <div class="version">v1.0.0-beta</div>
+                <div class="version">v1.2.0 • Local Engine</div>
             </div>
         </aside>
 
@@ -233,38 +238,20 @@
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
                         <input type="text" id="global-search-input"
-                            placeholder="Search across documents, chats, projects..." autocomplete="off">
+                            placeholder="Quick search documents, jobs, papers..." autocomplete="off">
                         <span class="search-shortcut-hint">Ctrl K</span>
                     </div>
                 </div>
                 <div class="header-right">
-                    <button class="btn btn-primary quick-new-btn" id="btn-quick-new" title="New Workspace">
+                    <button class="btn btn-primary quick-new-btn" id="btn-quick-new" title="New Plagiarism Scan">
                         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
                             stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                         </svg>
-                        <span>New</span>
+                        <span>New Scan</span>
                     </button>
-                    <div class="notification-container">
-                        <button class="notification-btn" id="notification-btn" aria-label="Notifications">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                            </svg>
-                            <span class="notification-badge" id="notification-badge"></span>
-                        </button>
-                        <div class="notification-dropdown hidden" id="notification-dropdown">
-                            <div class="notification-dropdown-header">
-                                <h3>Notifications</h3>
-                                <button id="btn-clear-notifications">Clear</button>
-                            </div>
-                            <div class="notification-list" id="notification-list">
-                                <div class="notification-empty">No new notifications</div>
-                            </div>
-                        </div>
-                    </div>
+                    
                     <button class="theme-toggle" id="theme-toggle-btn" aria-label="Toggle Theme" title="Toggle Theme"
                         style="margin-right: 0.5rem;">
                         <svg class="sun-icon" viewBox="0 0 24 24" width="18" height="18" fill="none"
@@ -284,25 +271,150 @@
                             <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
                         </svg>
                     </button>
-                    <div class="header-profile" id="header-profile-menu">
-                        <div class="profile-avatar">R</div>
-                        <span class="profile-name">Researcher</span>
+
+                    <!-- Header Profile with Modern Dropdown -->
+                    <div class="header-profile-wrapper">
+                        <div class="header-profile" id="header-profile-menu" title="User Profile">
+                            <div class="profile-avatar">G</div>
+                            <span class="profile-name">Sign In</span>
+                        </div>
+                        <div class="profile-dropdown-menu" id="profile-dropdown-menu">
+                            <div class="profile-menu-header" id="profile-dropdown-header">
+                                <div class="user-full-name">Guest Mode</div>
+                                <span class="user-email">Sign in to save and sync reports</span>
+                            </div>
+                            <div id="profile-dropdown-guest">
+                                <button class="profile-menu-item" id="profile-btn-signin">
+                                    <i class="fa-solid fa-right-to-bracket"></i> Sign In
+                                </button>
+                                <button class="profile-menu-item" id="profile-btn-signup">
+                                    <i class="fa-solid fa-user-plus"></i> Create Account
+                                </button>
+                            </div>
+                            <div id="profile-dropdown-user" style="display: none;">
+                                <button class="profile-menu-item" id="profile-btn-view-reports">
+                                    <i class="fa-solid fa-clock-rotate-left"></i> My Analysis History
+                                </button>
+                                <button class="profile-menu-item logout" id="profile-btn-logout">
+                                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </header>
 
+            <!-- ==================== 1. REVAMPED HOME COMMAND CENTER ==================== -->
             <div class="workspace-view" id="dashboard-home-view">
-                <div class="blank-start-content">
-                    <h2 class="blank-start-title">What's next, Researcher?</h2>
-                    <div class="blank-start-bar">
-                        <button class="bar-plus-btn" id="btn-blank-new" title="New Workspace">
-                            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                                stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="5" x2="12" y2="19"></line>
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                            </svg>
+                <div class="command-center-wrapper">
+                    <!-- Hero Greeting Banner -->
+                    <div class="command-hero">
+                        <div class="command-hero-tag">
+                            <i class="fa-solid fa-shield-halved"></i> Local-First Academic Integrity Platform
+                        </div>
+                        <h1>Welcome, <span id="home-greeting-name">Researcher</span></h1>
+                        <p>Analyze academic papers with dual-tier lexical & vector semantic matching, inspect sentence coordinates, and rewrite passages in scholarly tone with local AI.</p>
+                    </div>
+
+                    <!-- Live System Engine Metrics -->
+                    <div class="command-stats-grid">
+                        <div class="command-stat-card">
+                            <div class="command-stat-icon green">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+                            <div class="command-stat-info">
+                                <span class="command-stat-value" id="stat-vector-db">pgvector</span>
+                                <span class="command-stat-label">Vector Database</span>
+                            </div>
+                        </div>
+                        <div class="command-stat-card">
+                            <div class="command-stat-icon blue">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <div class="command-stat-info">
+                                <span class="command-stat-value" id="stat-es-bm25">BM25</span>
+                                <span class="command-stat-label">Lexical Search</span>
+                            </div>
+                        </div>
+                        <div class="command-stat-card">
+                            <div class="command-stat-icon purple">
+                                <i class="fa-solid fa-brain"></i>
+                            </div>
+                            <div class="command-stat-info">
+                                <span class="command-stat-value" id="stat-ai-model">Ollama</span>
+                                <span class="command-stat-label">AI Rewriter</span>
+                            </div>
+                        </div>
+                        <div class="command-stat-card">
+                            <div class="command-stat-icon amber">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </div>
+                            <div class="command-stat-info">
+                                <span class="command-stat-value" id="stat-pdf-engine">WeasyPrint</span>
+                                <span class="command-stat-label">PDF Generator</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Launch Tiles -->
+                    <div>
+                        <div class="command-section-title">
+                            <i class="fa-solid fa-compass" style="color: var(--accent-purple);"></i> Quick Launch Workspaces
+                        </div>
+                        <div class="command-quick-grid">
+                            <div class="command-action-tile" id="tile-launch-plagiarism">
+                                <div class="command-tile-top">
+                                    <div class="command-tile-icon cyan">
+                                        <i class="fa-solid fa-shield-halved"></i>
+                                    </div>
+                                    <div class="command-tile-arrow">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3>Plagiarism Analyzer</h3>
+                                    <p>Ingest PDF, DOCX, or TXT documents. Match against reference papers with sentence-level coordinate highlighting.</p>
+                                </div>
+                            </div>
+
+                            <div class="command-action-tile" id="tile-launch-paraphraser">
+                                <div class="command-tile-top">
+                                    <div class="command-tile-icon purple">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    </div>
+                                    <div class="command-tile-arrow">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3>AI Academic Paraphraser</h3>
+                                    <p>Rewrite flagged passages and refine clarity with tone selection (Academic, Formal, Executive, Creative).</p>
+                                </div>
+                            </div>
+
+                            <div class="command-action-tile" id="tile-launch-kb">
+                                <div class="command-tile-top">
+                                    <div class="command-tile-icon emerald">
+                                        <i class="fa-solid fa-book-open"></i>
+                                    </div>
+                                    <div class="command-tile-arrow">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h3>Academic Knowledge Base</h3>
+                                    <p>Explore seeded papers, arXiv abstracts, and vector corpus indexed in PostgreSQL and Elasticsearch.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Input Bar -->
+                    <div class="blank-start-bar" style="margin-top: 0.5rem;">
+                        <button class="bar-plus-btn" id="btn-blank-new" title="Run Quick Check">
+                            <i class="fa-solid fa-magnifying-glass" style="font-size: 0.85rem;"></i>
                         </button>
-                        <input type="text" id="blank-prompt-input" placeholder="Ask Lemma..." autocomplete="off">
+                        <input type="text" id="blank-prompt-input" placeholder="Type or paste text for instant plagiarism scan or AI rewrite..." autocomplete="off">
                     </div>
                 </div>
             </div>
@@ -317,10 +429,18 @@
                             <div class="icon-circle">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                             </div>
-                            <h3>Ingest Document</h3>
+                            <h3>Ingest Academic Document</h3>
                             <p class="drop-instructions">Drag and drop your file here, or click to browse</p>
                             <span class="file-formats">Supported formats: PDF, DOCX, TXT (Max 100MB)</span>
                             <input type="file" id="file-input" accept=".pdf,.docx,.txt" style="display: none;">
+
+                            <!-- Instant 1-Click Sample Loader -->
+                            <div class="sample-loader-banner">
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Quick Test:</span>
+                                <button type="button" class="btn-sample-load" id="btn-load-sample">
+                                    <i class="fa-solid fa-flask"></i> Load Sample Research Paper
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -417,10 +537,10 @@
                                 <i class="fa-regular fa-circle-check"></i> Coordinate Mapping
                             </div>
                             <div class="checklist-item" id="chk-lexical">
-                                <i class="fa-regular fa-circle"></i> Lexical Matching (TF-IDF)
+                                <i class="fa-regular fa-circle"></i> Lexical Matching (Elasticsearch BM25)
                             </div>
                             <div class="checklist-item" id="chk-semantic">
-                                <i class="fa-regular fa-circle"></i> Semantic Indexing (Embeddings)
+                                <i class="fa-regular fa-circle"></i> Semantic Indexing (pgvector Cosine)
                             </div>
                         </div>
                     </div>
@@ -429,8 +549,7 @@
                     <div class="panel inspector-card" id="inspector-card">
                         <h3>Sentence Coordinate Inspector</h3>
                         <p class="inspector-placeholder" id="inspector-placeholder">
-                            Hover or click on a segmented sentence in the document viewer to inspect absolute character
-                            coordinate indices.
+                            Hover or click on a segmented sentence in the document viewer to inspect absolute character coordinate indices and matched sources.
                         </p>
                         <div class="inspector-data hidden" id="inspector-data">
                             <div class="coordinate-tag-row">
@@ -471,32 +590,32 @@
                             </div>
 
                             <button class="btn btn-full btn-outline" id="btn-quick-paraphrase">
-                                <i class="fa-solid fa-pen-nib"></i> Paraphrase Segment
+                                <i class="fa-solid fa-pen-nib"></i> Paraphrase Segment with AI
                             </button>
                         </div>
                     </div>
                 </aside>
             </div>
 
-            <!-- ==================== 3. AI CHAT WORKSPACE (PARAPHRASER INTERFACE) ==================== -->
+            <!-- ==================== 3. AI PARAPHRASER WORKSPACE ==================== -->
             <div class="workspace-view content-grid hidden" id="paraphraser-workspace">
                 <!-- Left Panel: Text Input -->
                 <section class="left-panel panel">
                     <div class="panel-header-row">
-                        <h3>Plagiarism-Free Generator</h3>
-                        <span class="badge badge-purple">Ollama Llama3</span>
+                        <h3>Plagiarism-Free AI Rewriter</h3>
+                        <span class="badge badge-purple" id="badge-ollama-active"><i class="fa-solid fa-cube"></i> Ollama AI</span>
                     </div>
                     <div class="textarea-container">
                         <textarea id="para-input-text"
-                            placeholder="Paste your plagiarized sentence, paragraph, or document text here..."></textarea>
+                            placeholder="Paste your sentence, paragraph, or academic document text here to rewrite..."></textarea>
                     </div>
                     <div class="panel-footer-row">
                         <div class="tone-selector">
-                            <label for="para-tone"><i class="fa-solid fa-sliders"></i> Tone:</label>
+                            <label for="para-tone"><i class="fa-solid fa-sliders"></i> Tone Style:</label>
                             <select id="para-tone">
-                                <option value="academic">Academic & Professional</option>
-                                <option value="standard">Standard</option>
-                                <option value="creative">Creative</option>
+                                <option value="academic">Academic & Scholarly</option>
+                                <option value="standard">Formal & Clear</option>
+                                <option value="creative">Executive & Concise</option>
                             </select>
                         </div>
                         <button class="btn btn-primary" id="btn-run-paraphrase">
@@ -511,7 +630,7 @@
                         <div class="card-header-row">
                             <h3>Paraphrased Output</h3>
                             <button class="btn btn-sm btn-outline" id="btn-copy-paraphrase" disabled>
-                                <i class="fa-regular fa-copy"></i> Copy
+                                <i class="fa-regular fa-copy"></i> Copy Text
                             </button>
                         </div>
                         <div class="output-scroller">
@@ -538,14 +657,141 @@
                 </aside>
             </div>
 
-            <!-- ==================== 4. EXPORT / REPORTS WORKSPACE ==================== -->
+            <!-- ==================== 4. KNOWLEDGE BASE & LIBRARY WORKSPACE ==================== -->
+            <div class="workspace-view hidden" id="kb-workspace">
+                <div class="kb-workspace-container">
+                    <div class="panel-header-row">
+                        <div>
+                            <h2>Academic Knowledge Base & Reference Corpus</h2>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                                Indexed papers, arXiv abstracts, and vector embeddings queried during dual-tier plagiarism scans.
+                            </p>
+                        </div>
+                        <span class="badge badge-purple"><i class="fa-solid fa-database"></i> Local Vector Store</span>
+                    </div>
+
+                    <div class="kb-search-bar">
+                        <i class="fa-solid fa-magnifying-glass" style="color: var(--text-muted);"></i>
+                        <input type="text" id="kb-search-input" placeholder="Search reference papers by title, author, or keyword...">
+                    </div>
+
+                    <div class="kb-grid" id="kb-papers-grid">
+                        <div class="kb-paper-card">
+                            <div class="kb-paper-header">
+                                <span class="kb-source-badge">arXiv:1706.03762</span>
+                                <span class="badge badge-dim">Indexed</span>
+                            </div>
+                            <h3 class="kb-paper-title">Attention Is All You Need</h3>
+                            <span class="kb-paper-author">Vaswani et al. (2017)</span>
+                            <p class="kb-paper-abstract">The dominant sequence transduction models are based on complex recurrent or convolutional neural networks. We propose the Transformer, based solely on attention mechanisms.</p>
+                            <div class="kb-paper-footer">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-circle-nodes"></i> 384-dim Vector</span>
+                                <button class="btn btn-sm btn-outline btn-kb-copy" data-text="Attention Is All You Need. Vaswani et al., 2017."><i class="fa-regular fa-copy"></i> Cite</button>
+                            </div>
+                        </div>
+
+                        <div class="kb-paper-card">
+                            <div class="kb-paper-header">
+                                <span class="kb-source-badge">arXiv:1810.04805</span>
+                                <span class="badge badge-dim">Indexed</span>
+                            </div>
+                            <h3 class="kb-paper-title">BERT: Pre-training of Deep Bidirectional Transformers</h3>
+                            <span class="kb-paper-author">Devlin et al. (2018)</span>
+                            <p class="kb-paper-abstract">We introduce a new language representation model called BERT, designed to pre-train deep bidirectional representations from unlabeled text.</p>
+                            <div class="kb-paper-footer">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-circle-nodes"></i> 384-dim Vector</span>
+                                <button class="btn btn-sm btn-outline btn-kb-copy" data-text="BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding. Devlin et al., 2018."><i class="fa-regular fa-copy"></i> Cite</button>
+                            </div>
+                        </div>
+
+                        <div class="kb-paper-card">
+                            <div class="kb-paper-header">
+                                <span class="kb-source-badge">Nature Climate</span>
+                                <span class="badge badge-dim">Indexed</span>
+                            </div>
+                            <h3 class="kb-paper-title">Renewable Energy Systems & Climate Mitigation</h3>
+                            <span class="kb-paper-author">IPCC Synthesis Report (2023)</span>
+                            <p class="kb-paper-abstract">Transitioning from fossil fuels to renewable energy sources is key to mitigating global climate change and achieving net-zero emissions targets.</p>
+                            <div class="kb-paper-footer">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);"><i class="fa-solid fa-circle-nodes"></i> 384-dim Vector</span>
+                                <button class="btn btn-sm btn-outline btn-kb-copy" data-text="Renewable Energy Systems and Global Climate Mitigation. IPCC, 2023."><i class="fa-regular fa-copy"></i> Cite</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 5. CITATIONS GENERATOR WORKSPACE ==================== -->
+            <div class="workspace-view hidden" id="citations-workspace">
+                <div class="citations-wrapper">
+                    <div class="panel-header-row">
+                        <div>
+                            <h2>Citation & BibTeX Studio</h2>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
+                                Generate formatted citations in standard academic referencing styles.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="panel" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1.25rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="auth-form-group" style="margin: 0;">
+                                <label>Paper / Book Title</label>
+                                <input type="text" id="cite-title" class="auth-input" style="padding-left: 1rem;" value="Attention Is All You Need">
+                            </div>
+                            <div class="auth-form-group" style="margin: 0;">
+                                <label>Authors</label>
+                                <input type="text" id="cite-author" class="auth-input" style="padding-left: 1rem;" value="Ashish Vaswani, Noam Shazeer, Niki Parmar">
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+                            <div class="auth-form-group" style="margin: 0;">
+                                <label>Year</label>
+                                <input type="text" id="cite-year" class="auth-input" style="padding-left: 1rem;" value="2017">
+                            </div>
+                            <div class="auth-form-group" style="margin: 0;">
+                                <label>Journal / Conference</label>
+                                <input type="text" id="cite-journal" class="auth-input" style="padding-left: 1rem;" value="NeurIPS 2017">
+                            </div>
+                            <div class="auth-form-group" style="margin: 0;">
+                                <label>DOI / arXiv ID</label>
+                                <input type="text" id="cite-doi" class="auth-input" style="padding-left: 1rem;" value="arXiv:1706.03762">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label style="display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem;">Select Citation Format</label>
+                            <div class="citation-format-tabs" id="citation-format-tabs">
+                                <button class="citation-tab-btn active" data-style="apa">APA 7th</button>
+                                <button class="citation-tab-btn" data-style="ieee">IEEE</button>
+                                <button class="citation-tab-btn" data-style="bibtex">BibTeX</button>
+                                <button class="citation-tab-btn" data-style="mla">MLA 9th</button>
+                                <button class="citation-tab-btn" data-style="chicago">Chicago</button>
+                            </div>
+                        </div>
+
+                        <div class="citation-preview-box" id="citation-output-box">
+                            Vaswani, A., Shazeer, N., & Parmar, N. (2017). Attention Is All You Need. NeurIPS 2017. https://doi.org/arXiv:1706.03762
+                        </div>
+
+                        <div style="display: flex; justify-content: flex-end;">
+                            <button class="btn btn-primary" id="btn-copy-citation">
+                                <i class="fa-regular fa-copy"></i> Copy Formatted Citation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== 6. EXPORT / REPORTS WORKSPACE ==================== -->
             <div class="workspace-view content-grid hidden" id="reports-workspace">
                 <section class="left-panel panel" style="grid-column: span 12;">
                     <div class="panel-header-row">
                         <div>
-                            <h3>Reports History</h3>
+                            <h3>Analysis Reports History</h3>
                             <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px;">
-                                Access past analyses and download compiled academic integrity PDF reports.
+                                Access past document analyses and download publication-ready academic integrity PDF reports.
                             </p>
                         </div>
                         <button class="btn btn-sm btn-outline" id="btn-clear-history">
@@ -575,14 +821,13 @@
                                 <i class="fa-solid fa-file-invoice"></i>
                             </div>
                             <h3>No Reports Generated Yet</h3>
-                            <p>Ingest and analyze documents in the Plagiarism Checker to build your integrity reports
-                                archive.</p>
+                            <p>Ingest and analyze documents in the Plagiarism Checker to build your integrity reports archive.</p>
                         </div>
                     </div>
                 </section>
             </div>
 
-            <!-- ==================== 5. NON-FUNCTIONAL PLACEHOLDER WORKSPACE ==================== -->
+            <!-- ==================== 7. GENERIC PLACEHOLDER WORKSPACE ==================== -->
             <div class="workspace-view hidden" id="placeholder-workspace">
                 <section class="panel placeholder-card" style="grid-column: span 12;">
                     <div class="placeholder-content">
@@ -590,11 +835,7 @@
                             <i id="placeholder-icon" class="fa-solid fa-folder-open"></i>
                         </div>
                         <h2 id="placeholder-title">Workspace Section</h2>
-                        <p id="placeholder-desc">This module is currently queued for expansion in a future development
-                            sprint. The local architecture and storage systems are ready for activation.</p>
-                        <div class="placeholder-sprint-badge">
-                            <span>Target Milestone: </span><strong id="placeholder-sprint">Sprint 2</strong>
-                        </div>
+                        <p id="placeholder-desc">This module is currently queued for expansion in a future development sprint.</p>
                         <button class="btn btn-primary" id="btn-placeholder-back">
                             <i class="fa-solid fa-arrow-left"></i> Return to Dashboard
                         </button>
@@ -609,22 +850,22 @@
                 <div class="health-item" id="health-ollama" title="Ollama Model Status">
                     <span class="status-indicator offline" id="health-ollama-dot"></span>
                     <span class="health-label">Ollama (lemma-model):</span>
-                    <span class="health-status-text" id="health-ollama-text">Offline</span>
+                    <span class="health-status-text" id="health-ollama-text">Checking...</span>
                 </div>
                 <div class="health-item" id="health-es" title="Elasticsearch Cluster Status">
                     <span class="status-indicator offline" id="health-es-dot"></span>
-                    <span class="health-label">Elasticsearch:</span>
-                    <span class="health-status-text" id="health-es-text">Offline</span>
+                    <span class="health-label">Elasticsearch BM25:</span>
+                    <span class="health-status-text" id="health-es-text">Checking...</span>
                 </div>
                 <div class="health-item" id="health-db" title="PostgreSQL Vector DB Status">
                     <span class="status-indicator offline" id="health-db-dot"></span>
-                    <span class="health-label">PostgreSQL:</span>
-                    <span class="health-status-text" id="health-db-text">Offline</span>
+                    <span class="health-label">PostgreSQL pgvector:</span>
+                    <span class="health-status-text" id="health-db-text">Checking...</span>
                 </div>
                 <div class="health-item" id="health-celery" title="Background Task Activity">
                     <span class="status-indicator offline" id="health-celery-dot"></span>
-                    <span class="health-label">Celery Status:</span>
-                    <span class="health-status-text" id="health-celery-text">Offline</span>
+                    <span class="health-label">Celery Worker:</span>
+                    <span class="health-status-text" id="health-celery-text">Checking...</span>
                 </div>
             </div>
         </footer>

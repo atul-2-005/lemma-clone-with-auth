@@ -34,15 +34,30 @@ from app.tasks.celery_app import celery_app
 from app.tasks.analysis import analyze_document_task
 from fastapi import Depends
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL") or settings.DATABASE_URL
 
 if DATABASE_URL:
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 else:
-   DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/lemma"
+    DATABASE_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
 
-engine = create_engine(DATABASE_URL)
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+        DatabaseService.initialize_db()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Could not initialize database on startup: {e}")
+    try:
+        from app.services.elasticsearch_client import initialize_es
+        initialize_es()
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"Could not initialize elasticsearch on startup: {e}")
+    yield
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -50,6 +65,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
+    lifespan=lifespan,
 )
 
 # CORS Middleware config
@@ -185,7 +201,7 @@ async def health():
     def is_port_open_sync(h: str, p: int) -> bool:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.settimeout(0.2)
+                s.settimeout(1.0)
                 return s.connect_ex((clean_host(h), p)) == 0
         except Exception:
             return False
@@ -208,7 +224,7 @@ async def health():
             pass
 
     # Parse Redis host/ports
-    redis_host = "localhost"
+    redis_host = "127.0.0.1"
     redis_port = 6379
     redis_url = settings.REDIS_URL
     if redis_url:
@@ -235,7 +251,7 @@ async def health():
                 
             return await asyncio.wait_for(
                 anyio.to_thread.run_sync(check_db),
-                timeout=1.0
+                timeout=2.0
             )
         except Exception as e:
             local_logger.warning(f"Health check: Database connection failed: {e}")
@@ -244,7 +260,7 @@ async def health():
     # 2. Define Elasticsearch checker task
     async def check_elasticsearch():
         try:
-            async with httpx.AsyncClient(timeout=0.8) as client:
+            async with httpx.AsyncClient(timeout=2.0) as client:
                 res = await client.get(settings.ELASTICSEARCH_URL)
                 if res.status_code == 200:
                     return "healthy"
@@ -257,9 +273,9 @@ async def health():
     # 3. Define Ollama checker task
     async def check_ollama():
         try:
-            # Check Ollama status directly with a fast 1.0s timeout
+            # Check Ollama status directly with a 2.0s timeout
             url = f"{settings.OLLAMA_URL.rstrip('/')}/api/tags"
-            async with httpx.AsyncClient(timeout=1.0) as client:
+            async with httpx.AsyncClient(timeout=2.0) as client:
                 response = await client.get(url)
                 if response.status_code == 200:
                     data = response.json()
